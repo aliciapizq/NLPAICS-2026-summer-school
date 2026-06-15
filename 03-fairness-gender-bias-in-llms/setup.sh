@@ -10,3 +10,6 @@ set -euo pipefail
 
 # Example:
 # pip install --quiet scikit-learn==1.5.2 datasets==3.2.0
+
+pip install numpy pandas matplotlib seaborn nltk scipy spacy
+python -m spacy download en_core_web_sm
