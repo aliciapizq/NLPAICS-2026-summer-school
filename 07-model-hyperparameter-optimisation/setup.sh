@@ -73,6 +73,16 @@ PY
 # These downloads are retried: the 20 Newsgroups mirror occasionally returns a transient
 # HTTP error, and conference wifi is conference wifi. If a download keeps failing, just
 # re-run ./setup.sh 07 once the network settles.
+#
+# Cache the embedding model into the shared persistent HF cache on vast.ai (/workspace), the
+# SAME place the notebook loads it from offline (the other lessons use this convention too).
+# Off vast there is no /workspace, so HuggingFace falls back to its default cache and local
+# runs still work. The notebook sets the identical HF_HUB_CACHE, so writer and reader agree.
+if [ -d /workspace ]; then
+  export HF_HUB_CACHE="/workspace/.hf_home/hub"
+  mkdir -p "$HF_HUB_CACHE"
+fi
+echo "[07] HF model cache: ${HF_HUB_CACHE:-default (~/.cache/huggingface)}"
 python - <<'PY'
 import time
 
