@@ -18,9 +18,6 @@ set -euo pipefail
 echo "[setup] Installing dependencies..."
 # Blackwell GPUs (sm_120, e.g. RTX PRO 6000) require CUDA 13.x kernels.
 # cu126 tops out at sm_90; use cu130 for Blackwell support.
-pip install --force-reinstall \
-    torch==2.12.0 \
-    --index-url https://download.pytorch.org/whl/cu130
 
 pip install \
     transformers==5.11.0 \
