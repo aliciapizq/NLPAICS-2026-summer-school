@@ -1,45 +1,48 @@
 #!/usr/bin/env bash
 # Lesson 07, Automated Hyperparameter Optimization & Model Selection for NLP Pipelines
 #
-# Installs the AutoGOAL AutoML stack (migrated to Python 3.10) together with its
-# scikit-learn and NLTK contribs, entirely via pip. The root ./setup.sh runs this
-# INSIDE this lesson's own virtualenv, which on the vast.ai PyTorch (Vast) images is
-# created from /venv/main (Python 3.10). Plain `pip install` therefore lands in this
-# lesson's environment only. Must run non-interactively and be safe to re-run.
+# Installs the AutoGOAL AutoML stack (scikit-learn and NLTK contribs) entirely via pip.
+# The root ./setup.sh runs this INSIDE this lesson's own virtualenv, which on the vast.ai
+# PyTorch (Vast) images is created from /venv/main. Plain `pip install` therefore lands in
+# this lesson's environment only. Must run non-interactively and be safe to re-run.
 #
-# Why pinned / why 3.10: AutoGOAL's scientific stack is pinned to the exact versions
-# validated for the session; AutoGOAL needs Python 3.9/3.10 (scipy/scikit-learn/gensim
-# ship cp310 wheels at these versions, so the whole install is wheels-only, no compiler
+# Why pinned: AutoGOAL's scientific stack is pinned to the exact versions validated for the
+# session. AutoGOAL now runs on Python 3.9 through 3.12 (scikit-learn 1.3.2 and the rest of
+# the stack ship wheels for 3.10/3.11/3.12, so the install is wheels-only, no compiler
 # needed). torch from /venv/main stays importable alongside numpy 1.26 (verified).
 set -euo pipefail
 
 # --- 0. Guard the interpreter version -------------------------------------------------
 py="$(python -c 'import sys; print("%d.%d" % sys.version_info[:2])')"
 case "$py" in
-  3.9|3.10) ;;
-  *) echo "[07] AutoGOAL needs Python 3.9 or 3.10, but this environment is Python $py." >&2
-     echo "[07] Use a vastai/pytorch '...-py310' image (its /venv/main is Python 3.10)." >&2
+  3.9|3.10|3.11|3.12) ;;
+  *) echo "[07] AutoGOAL supports Python 3.9 through 3.12, but this environment is Python $py." >&2
+     echo "[07] Use a vastai/pytorch image whose /venv/main falls in that range (3.10, 3.11, 3.12 all work)." >&2
      exit 1;;
 esac
 echo "[07] Python $py at $(python -c 'import sys; print(sys.executable)')"
 
 # --- 1. Pinned scientific stack (the exact versions validated for the class) ----------
-# Installed first so AutoGOAL resolves against these; all have cp310 wheels.
+# Installed first so AutoGOAL resolves against these; all ship wheels for Python 3.10-3.12.
+# setuptools provides pkg_resources, which AutoGOAL imports but Python 3.12 no longer bundles.
 pip install --quiet \
+  "setuptools>=68,<81" \
   "numpy==1.26.4" \
   "scipy==1.12.0" \
-  "scikit-learn==1.0.2" \
+  "scikit-learn==1.3.2" \
   "gensim==4.3.3" \
   "nltk==3.9.4" \
   "python-crfsuite==0.9.12" \
   "sklearn-crfsuite==0.3.6"
 
 # --- 2. AutoGOAL AutoML + sklearn/nltk contribs, via pip from GitHub ------------------
-# Installed from the Python-3.10 branches (core v1.0.4, contribs v0.8.5). All four are
-# listed explicitly so pip resolves the cross-dependencies against these git checkouts,
-# NOT the older PyPI `autogoal` (which pins scipy 1.6 and breaks on Python 3.10).
-# Requires git (the vast.ai PyTorch image provides it). For a frozen ref, replace the
-# branch names with the commit SHAs (core 0aae518, contribs 39d2711).
+# Installed from the release branches that carry the fix: core branch v1.0.4 (package
+# version 1.0.5) and contrib branch v0.8.5 (package version 0.8.6). All four are listed
+# explicitly so pip resolves the cross-dependencies against these git checkouts, NOT the
+# older PyPI `autogoal` (which pins scipy 1.6 and caps Python at 3.10). These commits lift
+# the requires-python cap to <3.13 and bump scikit-learn to 1.3.2, so the stack installs on
+# Python 3.10 through 3.12. Requires git (the vast.ai PyTorch image provides it).
+# For a frozen build, pin the commit SHAs instead: core @1aa24e0  contrib @a03a124
 CORE="git+https://github.com/gia-uh/autogoal.git@v1.0.4"
 CONTRIB="git+https://github.com/autogoal/autogoal-contrib.git@v0.8.5"
 pip install --quiet \

@@ -1,4 +1,6 @@
 **/.venv/
+**/.venv310/
+**/.kernel-self-managed
 __pycache__/
 .ipynb_checkpoints/
 .DS_Store
